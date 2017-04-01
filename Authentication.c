@@ -1,13 +1,25 @@
 #include "Authentication.h"
 
-bool checkLogin(const char* login)
+int checkLogin(const char* login)
 {
-	return (hashData(login) == LOGIN);
+	if (hashData(login) == ADMIN_LOGIN)
+		return ADMIN;
+
+	if (hashData(login) == OPER_LOGIN)
+		return OPER;
+
+	return OTHER;
 }
 
-bool checkPassword(const char* password)
+int checkPassword(const char* password)
 {
-	return (hashData(password) == PASSWORD);
+	if (hashData(password) == ADMIN_PASSWORD)
+		return ADMIN;
+
+	if (hashData(password) == OPER_PASSWORD)
+		return OPER;
+
+	return OTHER;
 }
 
 unsigned int hashData(const char* line)

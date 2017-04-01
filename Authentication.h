@@ -2,12 +2,16 @@
 
 #include <stdbool.h>
 
-#define HASHMAX		39883
-#define LOGIN		32364
-#define PASSWORD	32364
+#define HASHMAX			39883
+#define ADMIN_LOGIN		32364	//admin
+#define ADMIN_PASSWORD	32364	//admin
+#define OPER_LOGIN		24908	//oper
+#define OPER_PASSWORD	24908	//oper
 
-bool checkLogin(char* login);
+enum role {ADMIN, OPER, OTHER};
 
-bool checkPassword(char* password);
+int checkLogin(char* login);
+
+int checkPassword(char* password);
 
 unsigned int hashData(const char* line);
