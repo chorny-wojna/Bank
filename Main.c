@@ -1,7 +1,8 @@
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include "Authentication.h"
 #include "sqlite3.h"
+#include <stdlib.h>
 
 static int callback(void *data, int argc, char **argv, char **azColName)
 {
@@ -301,10 +302,234 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-	else
+	else if (user == OPER)
 	{
-		//write your code here
-		#error
+		while (true)
+		{
+			printf("\nMain Menu\n");
+			printf("1) Credit\n");
+			printf("2) Debit\n");
+			printf("3) Transaction\n");
+			printf("4) Transaction percent\n");
+
+			char c = getch();
+
+			switch (c)
+			{
+				case '1':
+				{
+					printf("Enter account id");
+					char id[20];
+					char ID[20];
+					gets(id);
+					strcpy(ID, id);
+					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
+					strcat(sql, id);
+					strcat(sql, ";");
+					sqlite3_stmt *pStmt;
+					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					if (rc != SQLITE_OK) {
+						fprintf(stderr, "Failed to prepare statement\n");
+						fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+						sqlite3_close(db);
+						return 1;
+					}
+					rc = sqlite3_step(pStmt);
+					double sum = sqlite3_column_double(pStmt, 0);
+					printf("Enter credit\n");
+					gets(id);
+					sum += atof(id);
+					sprintf(id, "%f", sum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, id);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, ";");
+
+				}
+				break;
+				case '2':
+				{
+					printf("Enter account id");
+					char id[20];
+					char ID[20];
+					char debit[20];
+					gets(id);
+					strcpy(ID, id);
+					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
+					strcat(sql, id);
+					strcat(sql, ";");
+					sqlite3_stmt *pStmt;
+					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					if (rc != SQLITE_OK) {
+						fprintf(stderr, "Failed to prepare statement\n");
+						fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+						sqlite3_close(db);
+						return 1;
+					}
+					rc = sqlite3_step(pStmt);
+					double sum = sqlite3_column_double(pStmt, 0);
+					printf("Enter debit\n");
+					gets(debit);
+					double scr = atof(debit);
+					sum -= scr;
+					if (sum < 0)
+					{
+						printf("Limit is exceeded\n");
+						break;
+					}
+					sprintf(debit, "%f", sum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, debit);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, ";");
+				
+				}
+				break;
+				case '3':
+				{
+					printf("Enter account id - source");
+					char id[20];
+					char ID[20];
+					gets(id);
+					strcpy(ID, id);
+					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
+					strcat(sql, id);
+					strcat(sql, ";");
+					sqlite3_stmt *pStmt;
+					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					if (rc != SQLITE_OK) {
+						fprintf(stderr, "Failed to prepare statement\n");
+						fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+						sqlite3_close(db);
+						return 1;
+					}
+					rc = sqlite3_step(pStmt);
+					double sum = sqlite3_column_double(pStmt, 0);
+					printf("Enter sum\n");
+					char cSum[20];
+					char destSum[20];
+					gets(cSum);
+					strcpy(destSum, cSum);
+					sum -= atof(cSum);
+					if (sum < 0)
+					{
+						printf("Limit is exceeded\n");
+						break;
+					}
+					sprintf(cSum, "%f", sum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, cSum);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, ";");
+					char updSource[200] ;
+					strcpy(updSource, sql);
+					printf("Enter account destination id");
+					gets(id);
+					strcpy(ID, id);
+					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
+					strcat(sql, id);
+					strcat(sql, ";");
+					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					if (rc != SQLITE_OK) {
+						fprintf(stderr, "Failed to prepare statement\n");
+						fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+						sqlite3_close(db);
+						return 1;
+					}
+					rc = sqlite3_step(pStmt);
+					sum = sqlite3_column_double(pStmt, 0);
+					sum += atof(destSum);
+					sprintf(id, "%f", sum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, id);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, "; ");
+				//	rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					strcat(sql, updSource);
+				}
+				break;
+				case '4':
+				{
+					printf("Enter account id - source");
+					char id[20];
+					char ID[20];
+					gets(id);
+					strcpy(ID, id);
+					strcpy(sql, "select BANK_ACCOUNTS.SUM,BANK_CONFIG.PERCENT from BANK_ACCOUNTS,BANK_CONFIG where BANK_ACCOUNTS.ID = ");
+					strcat(sql, id);
+					strcat(sql, ";");
+					sqlite3_stmt *pStmt;
+					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					if (rc != SQLITE_OK) {
+						fprintf(stderr, "Failed to prepare statement\n");
+						fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+						sqlite3_close(db);
+						return 1;
+					}
+					rc = sqlite3_step(pStmt);
+					double sum = sqlite3_column_double(pStmt, 0);
+					double percentage = (double)sqlite3_column_int(pStmt,1)/100 +1;
+					double percSum = (double)sum / percentage;
+					double diff = sum - percSum;
+					if (sum < 0)
+					{
+						printf("Limit is exceeded\n");
+						break;
+					}
+					char cSum[20];
+					sprintf(cSum, "%f", percSum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, cSum);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, "; ");
+					char updSource[200];
+					strcpy(updSource, sql);
+					printf("Enter account destination id");
+					gets(id);
+					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
+					strcat(sql, id);
+					strcpy(ID, id);
+					strcat(sql, ";");
+					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					if (rc != SQLITE_OK) {
+						fprintf(stderr, "Failed to prepare statement\n");
+						fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+						sqlite3_close(db);
+						return 1;
+					}
+					rc = sqlite3_step(pStmt);
+					sum = sqlite3_column_double(pStmt, 0);
+					sum += diff;
+					sprintf(id, "%f", sum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, id);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, "; ");
+					strcat(sql, updSource);
+				}
+				break;
+				default:
+					sqlite3_close(db);
+					return 1;
+					break;
+			}
+			rc = sqlite3_exec(db, sql, callback, (void*)data, &zErrMsg);
+			if (rc != SQLITE_OK)
+			{
+				fprintf(stderr, "SQL error: %s\n", zErrMsg);
+				sqlite3_free(zErrMsg);
+			}
+			else
+			{
+				fprintf(stdout, "Operation done successfully\n");
+			}
+		}
 	}
 
 	sqlite3_close(db);
