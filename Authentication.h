@@ -10,8 +10,8 @@
 
 enum role {ADMIN, OPER, OTHER};
 
-int checkLogin(char* login);
+int checkLogin(const char* login);
 
-int checkPassword(char* password);
+int checkPassword(const char* password);
 
 unsigned int hashData(const char* line);
