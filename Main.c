@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "Authentication.h"
 #include "sqlite3.h"
+#include <stdlib.h>
 
 static int callback(void *data, int argc, char **argv, char **azColName)
 {
@@ -319,7 +320,10 @@ int main(int argc, char* argv[])
 				{
 					printf("Enter account id");
 					char id[20];
+					char ID[20];
 					gets(id);
+					strcpy(ID, id);
+
 					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
 					strcat(sql, id);
 					strcat(sql, ";");
@@ -337,8 +341,12 @@ int main(int argc, char* argv[])
 					gets(id);
 					sum += atof(id);
 					sprintf(id, "%f", sum);
-					strcpy(sql, "UPDATE BANK_ACCOUNTS SET BANK_ACCOUNTS.SUM = ");
+
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
 					strcat(sql, id);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+
 					strcat(sql, ";");
 
 				}
@@ -347,7 +355,12 @@ int main(int argc, char* argv[])
 				{
 					printf("Enter account id");
 					char id[20];
+
+					char ID[20];
+					char debit[20];
 					gets(id);
+					strcpy(ID, id);
+
 					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
 					strcat(sql, id);
 					strcat(sql, ";");
@@ -362,16 +375,23 @@ int main(int argc, char* argv[])
 					rc = sqlite3_step(pStmt);
 					double sum = sqlite3_column_double(pStmt, 0);
 					printf("Enter debit\n");
-					gets(id);
-					sum -= atof(id);
+
+					gets(debit);
+					double scr = atof(debit);
+					sum -= scr;
+
 					if (sum < 0)
 					{
 						printf("Limit is exceeded\n");
 						break;
 					}
-					sprintf(id, "%f", sum);
-					strcpy(sql, "UPDATE BANK_ACCOUNTS SET BANK_ACCOUNTS.SUM = ");
-					strcat(sql, id);
+
+					sprintf(debit, "%f", sum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
+					strcat(sql, debit);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+
 					strcat(sql, ";");
 				
 				}
@@ -380,7 +400,11 @@ int main(int argc, char* argv[])
 				{
 					printf("Enter account id - source");
 					char id[20];
+
+					char ID[20];
 					gets(id);
+					strcpy(ID, id);
+
 					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
 					strcat(sql, id);
 					strcat(sql, ";");
@@ -406,13 +430,20 @@ int main(int argc, char* argv[])
 						break;
 					}
 					sprintf(cSum, "%f", sum);
-					strcpy(sql, "UPDATE BANK_ACCOUNTS SET BANK_ACCOUNTS.SUM = ");
+
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
 					strcat(sql, cSum);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+
 					strcat(sql, ";");
 					char updSource[200] ;
 					strcpy(updSource, sql);
 					printf("Enter account destination id");
 					gets(id);
+
+					strcpy(ID, id);
+
 					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
 					strcat(sql, id);
 					strcat(sql, ";");
@@ -425,21 +456,28 @@ int main(int argc, char* argv[])
 					}
 					rc = sqlite3_step(pStmt);
 					sum = sqlite3_column_double(pStmt, 0);
-					printf("Enter credit\n");
-					gets(id);
+
 					sum += atof(destSum);
 					sprintf(id, "%f", sum);
-					strcpy(sql, "UPDATE BANK_ACCOUNTS SET BANK_ACCOUNTS.SUM = ");
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
 					strcat(sql, id);
-					strcat(sql, ";");
-					strcpy(sql, updSource);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, "; ");
+				//	rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
+					strcat(sql, updSource);
+
 				}
 				break;
 				case '4':
 				{
 					printf("Enter account id - source");
 					char id[20];
+
+					char ID[20];
 					gets(id);
+					strcpy(ID, id);
+
 					strcpy(sql, "select BANK_ACCOUNTS.SUM,BANK_CONFIG.PERCENT from BANK_ACCOUNTS,BANK_CONFIG where BANK_ACCOUNTS.ID = ");
 					strcat(sql, id);
 					strcat(sql, ";");
@@ -455,23 +493,32 @@ int main(int argc, char* argv[])
 					double sum = sqlite3_column_double(pStmt, 0);
 					double percentage = (double)sqlite3_column_int(pStmt,1)/100 +1;
 					double percSum = (double)sum / percentage;
-					sum -= percSum;
+
+					double diff = sum - percSum;
+
 					if (sum < 0)
 					{
 						printf("Limit is exceeded\n");
 						break;
 					}
 					char cSum[20];
-					sprintf(cSum, "%f", sum);
-					strcpy(sql, "UPDATE BANK_ACCOUNTS SET BANK_ACCOUNTS.SUM = ");
+
+					sprintf(cSum, "%f", percSum);
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
 					strcat(sql, cSum);
-					strcat(sql, ";");
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, "; ");
+
 					char updSource[200];
 					strcpy(updSource, sql);
 					printf("Enter account destination id");
 					gets(id);
 					strcpy(sql, "select BANK_ACCOUNTS.SUM from BANK_ACCOUNTS where ID = ");
 					strcat(sql, id);
+
+					strcpy(ID, id);
+
 					strcat(sql, ";");
 					rc = sqlite3_prepare_v2(db, sql, -1, &pStmt, 0);
 					if (rc != SQLITE_OK) {
@@ -482,14 +529,16 @@ int main(int argc, char* argv[])
 					}
 					rc = sqlite3_step(pStmt);
 					sum = sqlite3_column_double(pStmt, 0);
-					printf("Enter credit\n");
-					gets(id);
-					sum += percSum;
+
+					sum += diff;
 					sprintf(id, "%f", sum);
-					strcpy(sql, "UPDATE BANK_ACCOUNTS SET BANK_ACCOUNTS.SUM = ");
+					strcpy(sql, "UPDATE BANK_ACCOUNTS SET SUM = '");
 					strcat(sql, id);
-					strcat(sql, ";");
-					strcpy(sql, updSource);
+					strcat(sql, "' WHERE ID = ");
+					strcat(sql, ID);
+					strcat(sql, "; ");
+					strcat(sql, updSource);
+
 				}
 				break;
 				default:
